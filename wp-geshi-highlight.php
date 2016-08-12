@@ -464,4 +464,25 @@ if (!CUSTOM_TAGS) {
         'cssfile' => array()
     );
 }
+
+//Inject a tinymce attribute (extended_valid_elements) which instructs 
+//the editor to leave the <pre args></pre> blocks "as is".
+//Without this setting, you would loose your pre arguments every time 
+//you switch back to the visual editor while editing posts.
+
+function wp_geshi_tinymce_add_preAttr( $arr = array() ) {
+  $extra = 'pre[lang|line|highlight|escaped|cssfile]';
+
+  if ( isset( $arr['extended_valid_elements'] ) ) {
+    // append to existing value
+    $arr['extended_valid_elements'] .= ',' . $extra;
+  } else {
+    // set the value
+    $arr['extended_valid_elements'] = $extra;
+  }
+
+  return $arr;
+}
+
+add_filter('tiny_mce_before_init','wp_geshi_tinymce_add_preAttr');
 ?>
