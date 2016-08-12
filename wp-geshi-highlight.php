@@ -222,12 +222,13 @@ function wp_geshi_insert_comments_with_uuid($comments_2nd_read) {
 // 0: all
 // 1: language
 // 2: line
-// 3: escaped
-// 4: cssfile (a filename without .css suffix)
-// 5: code
+// 3: highlight
+// 4: escaped
+// 5: cssfile (a filename without .css suffix)
+// 6: code
 function wp_geshi_filter_replace_code($s) {
     return preg_replace_callback(
-        "/\s*<pre(?:lang=[\"']([\w-]+)[\"']|line=[\"'](\d*)[\"']"
+        "/\s*<pre(?:lang=[\"']([\w-]+)[\"']|line=[\"'](\d*)[\"']|highlight=[\"']([0-9,]*)[\"']"
         ."|escaped=[\"'](true|false)?[\"']|cssfile=[\"']([\S]+)[\"']|\s)+>".
         "(.*)<\/pre>\s*/siU",
         "wp_geshi_store_and_substitute",
@@ -284,9 +285,10 @@ function wp_geshi_highlight_and_generate_css() {
         // a comment to function `wp_geshi_filter_replace_code()`.
         $language = strtolower(trim($match[1]));
         $line = trim($match[2]);
-        $escaped = trim($match[3]);
-        $cssfile = trim($match[4]);
-        $code = wp_geshi_code_trim($match[5]);
+        $highlight = explode(",",trim($match[3]));
+        $escaped = trim($match[4]);
+        $cssfile = trim($match[5]);
+        $code = wp_geshi_code_trim($match[6]);
         if ($escaped == "true")
             $code = htmlspecialchars_decode($code); // (C) Ryan McGeary
 
@@ -302,6 +304,14 @@ function wp_geshi_highlight_and_generate_css() {
             $geshi->start_line_numbers_at($line);
             }
 
+        // Highlight lines
+        if ($highlight[0] != "") {
+            // Align higlight numbers with start line, if given.
+            foreach ($highlight as &$thisline) {
+                $thisline -= $line-1;
+                }
+            $geshi->highlight_lines_extra($highlight);
+            }
         // Set the output type. Reference:
         // http://qbnz.com/highlighter/geshi-doc.html#the-code-container
         $geshi->set_header_type(GESHI_HEADER_PRE_VALID);
@@ -441,6 +451,7 @@ if (!CUSTOM_TAGS) {
     $allowedposttags['pre'] = array(
         'lang' => array(),
         'line' => array(),
+        'highlight' => array(),
         'escaped' => array(),
         'cssfile' => array()
     );
@@ -448,6 +459,7 @@ if (!CUSTOM_TAGS) {
     $allowedtags['pre'] = array(
         'lang' => array(),
         'line' => array(),
+        'highlight' => array(),
         'escaped' => array(),
         'cssfile' => array()
     );
