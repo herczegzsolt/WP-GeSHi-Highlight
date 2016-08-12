@@ -50,6 +50,7 @@
 */
 
 .wp-geshi-highlight pre, .wp-geshi-highlight span {
+    color: #000;
     overflow: visible;
     margin: 0 !important;
     padding: 0;
